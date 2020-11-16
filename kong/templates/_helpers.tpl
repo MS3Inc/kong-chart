@@ -211,7 +211,7 @@ The name of the service used for the ingress controller's validation webhook
 */}}
 
 {{- $autoEnv := dict -}}
-{{- $_ := set $autoEnv "CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY" true -}}
+{{- $_ := set $autoEnv "CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY" "true" -}}
 {{- $_ := set $autoEnv "CONTROLLER_PUBLISH_SERVICE" (printf "%s/%s-proxy" .Release.Namespace (include "kong.fullname" .)) -}}
 {{- $_ := set $autoEnv "CONTROLLER_INGRESS_CLASS" .Values.ingressController.ingressClass -}}
 {{- $_ := set $autoEnv "CONTROLLER_ELECTION_ID" (printf "kong-ingress-controller-leader-%s" .Values.ingressController.ingressClass) -}}
@@ -619,17 +619,5 @@ Environment variables are sorted alphabetically
 {{- end -}}
 
 {{- define "kong.wait-for-postgres" -}}
-- name: wait-for-postgres
-{{- if .Values.waitImage.unifiedRepoTag }}
-  image: "{{ .Values.waitImage.unifiedRepoTag }}"
-{{- else }}
-  image: "{{ .Values.waitImage.repository }}:{{ .Values.waitImage.tag }}"
-{{- end }}
-  imagePullPolicy: {{ .Values.waitImage.pullPolicy }}
-  env:
-  {{- include "kong.no_daemon_env" . | nindent 2 }}
-  command: [ "bash", "/wait_postgres/wait.sh" ]
-  volumeMounts:
-  - name: {{ template "kong.fullname" . }}-bash-wait-for-postgres
-    mountPath: /wait_postgres
+
 {{- end -}}
