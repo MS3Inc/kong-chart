@@ -235,7 +235,7 @@ The name of the service used for the ingress controller's validation webhook
       ====== MERGE AND RENDER ENV BLOCK ======
 */}}
 
-{{- $completeEnv := mergeOverwrite $autoEnv $userEnv -}}
+{{- $completeEnv := mustMergeOverwrite $autoEnv $userEnv -}}
 {{- template "kong.renderEnv" $completeEnv -}}
 
 {{- end -}}
@@ -583,7 +583,7 @@ TODO: remove legacy admin listen behavior at a future date
       ====== MERGE AND RENDER ENV BLOCK ======
 */}}
 
-{{- $completeEnv := mergeOverwrite $autoEnv $userEnv -}}
+{{- $completeEnv := mustMergeOverwrite $autoEnv $userEnv -}}
 {{- template "kong.renderEnv" $completeEnv -}}
 
 {{- end -}}
@@ -619,5 +619,17 @@ Environment variables are sorted alphabetically
 {{- end -}}
 
 {{- define "kong.wait-for-postgres" -}}
-
+- name: wait-for-postgres
+{{- if .Values.waitImage.unifiedRepoTag }}
+  image: "{{ .Values.waitImage.unifiedRepoTag }}"
+{{- else }}
+  image: "{{ .Values.waitImage.repository }}:{{ .Values.waitImage.tag }}"
+{{- end }}
+  imagePullPolicy: {{ .Values.waitImage.pullPolicy }}
+  env:
+  {{- include "kong.no_daemon_env" . | nindent 2 }}
+  command: [ "bash", "/wait_postgres/wait.sh" ]
+  volumeMounts:
+  - name: {{ template "kong.fullname" . }}-bash-wait-for-postgres
+    mountPath: /wait_postgres
 {{- end -}}
